@@ -20,6 +20,7 @@ interface OwnProps {
 interface StoreProps {
   grid: Grid;
   rowKey: RowKey;
+  rowIndex: number;
   columnInfo: ColumnInfo;
   renderData: CellRenderData;
   disabled: boolean;
@@ -38,10 +39,12 @@ export class BodyCellComp extends Component<Props> {
     const {
       grid,
       rowKey,
+      rowIndex,
       renderData,
       columnInfo,
       refreshRowHeight,
-      disabled: allDisabled
+      disabled: allDisabled,
+      dispatch
     } = this.props;
 
     // eslint-disable-next-line new-cap
@@ -66,7 +69,11 @@ export class BodyCellComp extends Component<Props> {
       //  - If the width of grid is 'auto' actual width of grid is calculated from the
       //    Container component using setTimeout(fn, 0)
       //  - Delay 16ms for defer the function call later than the Container component.
-      window.setTimeout(() => refreshRowHeight(rendererEl.clientHeight), 16);
+      window.setTimeout(() => {
+        const height = rendererEl.clientHeight;
+        dispatch('setCellHeight', columnInfo.name, rowIndex, height);
+        refreshRowHeight(height);
+      }, 16);
     }
   }
 
@@ -80,10 +87,12 @@ export class BodyCellComp extends Component<Props> {
       const {
         grid,
         rowKey,
+        rowIndex,
         renderData,
         columnInfo,
         refreshRowHeight,
-        disabled: allDisabled
+        disabled: allDisabled,
+        dispatch
       } = nextProps;
 
       this.renderer.render({
@@ -95,7 +104,9 @@ export class BodyCellComp extends Component<Props> {
       });
 
       if (refreshRowHeight) {
-        refreshRowHeight(this.el.scrollHeight);
+        const height = this.renderer.getElement().clientHeight;
+        dispatch('setCellHeight', columnInfo.name, rowIndex, height);
+        refreshRowHeight(height);
       }
     }
   }
@@ -203,6 +214,7 @@ export const BodyCell = connect<StoreProps, OwnProps>(
     return {
       grid,
       rowKey,
+      rowIndex,
       disabled,
       columnInfo,
       renderData: valueMap[columnName],
