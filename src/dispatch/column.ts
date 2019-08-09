@@ -52,9 +52,6 @@ export function setColumns({ column, data, focus }: Store, optColumns: OptColumn
   const columnInfos = optColumns.map(optColumn =>
     createColumn(optColumn, columnOptions, relationColumns, copyOptions, treeColumnOptions)
   );
-
-  column.allColumns = [...rowHeaders, ...columnInfos];
-  const { allColumnMap } = column;
   const { rawData } = data;
 
   focus.editingAddress = null;
@@ -62,12 +59,14 @@ export function setColumns({ column, data, focus }: Store, optColumns: OptColumn
   setTimeout(() => {
     initFocus(focus);
 
+    column.allColumns = [...rowHeaders, ...columnInfos];
+
     data.viewData.forEach(viewRow => {
       if (Array.isArray(viewRow.__unobserveFns__)) {
         viewRow.__unobserveFns__.forEach(fn => fn());
       }
     });
-    data.viewData = rawData.map(row => createViewRow(row, allColumnMap, rawData));
+    data.viewData = rawData.map(row => createViewRow(row, column.allColumnMap, rawData));
   });
 }
 
